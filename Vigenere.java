@@ -9,6 +9,9 @@ import java.nio.file.Paths;
 
 public class Vigenere {
 
+    private static final int MAX_FILE_SIZE = 512;
+    private static final int OFFSET_LOWERCASE = 97;
+
     public static void main(String[] args) {
         String keyFileName = args[0];
         String plaintextFileName = args[1];
@@ -26,7 +29,7 @@ public class Vigenere {
 
         int keyLength = key.length(), plaintextLength = plaintext.length(), paddingCount;
 
-        paddingCount = plaintextLength < 512 ? keyLength - (plaintextLength % keyLength) : 0;
+        paddingCount = plaintextLength < MAX_FILE_SIZE ? keyLength - (plaintextLength % keyLength) : 0;
 
         char[] plaintextAdjusted = getAdjustedArray(plaintextLength, plaintext, paddingCount != 0, paddingCount);
         char[] keyAdjusted = getAdjustedArray(keyLength, key, false, 0);
@@ -50,13 +53,12 @@ public class Vigenere {
      */
     private static char[] encrypt(char[] plaintext, char[] key) {
         char[] temp = new char[plaintext.length];
-        final int offset = 97;
         for (int i = 0; i < temp.length; i++) {
             if (plaintext[i] == ' ') break;
-            int p = (int) plaintext[i] - offset;
-            int k = (int) key[i % key.length] - offset;
+            int p = (int) plaintext[i] - OFFSET_LOWERCASE;
+            int k = (int) key[i % key.length] - OFFSET_LOWERCASE;
             int c = (p + k) % 26;
-            char encryptedCharacter = (char) (c + offset);
+            char encryptedCharacter = (char) (c + OFFSET_LOWERCASE);
             temp[i] = encryptedCharacter;
         }
         return temp;
@@ -70,7 +72,7 @@ public class Vigenere {
      * @return char array adjusted to meet the 512 requirements
      */
     private static char[] getAdjustedArray(int length, String input, boolean padding, int paddingAmount) {
-        char[] temp = new char[length > 512 || padding ? 512 : length];
+        char[] temp = new char[length > MAX_FILE_SIZE || padding ? MAX_FILE_SIZE : length];
         int paddingStart = 0;
         for (int i = 0; i < (padding ? input.length() : temp.length); i++) {
             temp[i] = input.charAt(i);
@@ -90,9 +92,7 @@ public class Vigenere {
      * @throws Exception Citation: https://www.geeksforgeeks.org/different-ways-reading-text-file-java/
      */
     private static String readFileAsString(String fileName) throws Exception {
-        String data;
-        data = new String(Files.readAllBytes(Paths.get(fileName)));
-        return data;
+        return new String(Files.readAllBytes(Paths.get(fileName)));
     }
 
     /**
